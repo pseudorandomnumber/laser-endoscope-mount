@@ -1,0 +1,13 @@
+# Exported prints (generate them from the .scad; attach to GitHub releases if needed)
+*.stl
+*.3mf
+*.gcode
+
+# Editors
+.vscode/
+.obsidian/
+
+# Windows and Nextcloud
+Thumbs.db
+desktop.ini
+*conflicted copy*

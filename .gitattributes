@@ -1,0 +1,7 @@
+# Store text with LF so Windows git (autocrlf) and WSL git agree
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.stl binary
+*.3mf binary

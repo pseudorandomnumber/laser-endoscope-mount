@@ -1,0 +1,40 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "Falcon A1 Pro 20W": {
+            "aim_at_focus": "false",
+            "cam_drop": "5",
+            "cam_offset": "6",
+            "cam_tilt": "0",
+            "clamp_len": "12",
+            "clamp_wall": "2.2",
+            "hole_d": "3.4",
+            "hole_spacing": "20",
+            "plate_h": "16",
+            "plate_t": "4",
+            "plate_w": "30",
+            "scope_clearance": "0.2",
+            "scope_d": "5.5",
+            "show_dims": "true",
+            "show_scope": "true",
+            "snap_ratio": "0.75"
+        },
+        "Sculpfun C1 Mini": {
+            "cam_drop": "25",
+            "cam_offset": "12",
+            "cam_tilt": "30",
+            "clamp_len": "12",
+            "clamp_wall": "2.2",
+            "hole_d": "3.4",
+            "hole_spacing": "20",
+            "plate_h": "16",
+            "plate_t": "4",
+            "plate_w": "30",
+            "scope_clearance": "0.2",
+            "scope_d": "7",
+            "show_dims": "true",
+            "show_scope": "true",
+            "snap_ratio": "0.75"
+        }
+    }
+}

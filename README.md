@@ -26,7 +26,8 @@ machine), below the module, looking at the laser spot.
 
 If your laser is not listed, start with any clip preset and change the sizes (see below).
 
-**Falcon A1 Pro 20W notes**: module 69.5 × 47.1 mm, beam 34.5 mm from the right face.
+**Falcon A1 Pro 20W notes**: module 69.5 × 47.1 mm, corner radius about 7 mm at the front
+and 1.5 mm at the back, beam 34.5 mm from the right face.
 The bottom screws are M3×8, 35.5 mm apart, 10 mm in from the right face. The bracket adds
 3 mm, so use M3×10: that still engages 7 mm of thread and cannot bottom out deeper than the
 original screw. The clip band is 15 mm high; the side vents start at 27 mm, and the back
@@ -65,7 +66,7 @@ laser. All sliders jump to the values of that preset.
 
 Press **F5** (preview). You see:
 
-- the mount (teal),
+- the mount (yellow),
 - a transparent grey box: your laser module,
 - a transparent rod: the endoscope,
 - a blue line and dot: the laser beam and its focus point,
@@ -92,7 +93,12 @@ Open a section in the Customizer, drag a slider or type a number, then press **F
 |---|---|
 | `mod_w` | width of the module, left to right |
 | `mod_d` | depth of the module, front to back |
-| `mod_r` | how rounded the vertical corners are (radius) |
+| `mod_r_front` | corner radius of the two front corners, seen from below |
+| `mod_r_back` | corner radius of the two back corners, seen from below |
+
+Measure where the clip band will sit (the lowest 10–15 mm of the housing). Many modules
+have rounder corners at the front than at the back; estimate each radius, a bit too small is
+safer than too large.
 | `beam_x` | distance from the module's right face to the center of the nozzle |
 | `focus_dist` | distance from the module's bottom face down to the workpiece when focused |
 
@@ -110,7 +116,7 @@ Open a section in the Customizer, drag a slider or type a number, then press **F
 | Slider | Meaning |
 |---|---|
 | `cam_offset` | how far the lens center sits out to the right of the module |
-| `cam_drop` | how far the lens reaches below the mount's underside; 0 = flush with the mount |
+| `cam_drop` | how far the camera holder reaches below the mount's underside; 0 = flush, nothing sticks out below |
 | `aim_at_focus` | ticked: the camera points at the focus point automatically |
 | `cam_tilt` | manual angle, only used when `aim_at_focus` is off |
 
@@ -126,6 +132,7 @@ air-assist stream.
 | `clip_lip` | small ledge under the module's bottom edge, sets the height |
 | `clip_wall` | wall thickness |
 | `clip_screw` | M3 clamp screw with a captive nut on the front |
+| `clip_flat_top` | fills the camera arm up to the band's top edge, so the clip prints upside down without supports |
 
 **Bottom screw mount** (only for `bottom_screws`)
 
@@ -162,7 +169,9 @@ added to the list above.
 2. **File → Export → Export as STL** (or F7).
 3. Slice and print:
    - **Material**: PETG or ASA. The module gets warm; PLA can soften.
-   - **Clip**: print it upside down (top edge of the band on the bed).
+   - **Clip**: print it upside down, top edge of the band on the bed. With `clip_flat_top`
+     on, the band and the camera arm lie flat, no supports needed. The lip under the
+     module's edge then prints as a small 1.5 mm ledge at the top.
    - **Bottom screws / side plate**: let your slicer choose the orientation and enable supports.
 4. Test the fit before you print the final version: print only the band with a low
    `clip_h`, or check the camera holder with `scope_clearance`.

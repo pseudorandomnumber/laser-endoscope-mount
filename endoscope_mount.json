@@ -5,7 +5,6 @@
                                                            "mount_style":  "clip",
                                                            "mod_w":  "69.5",
                                                            "mod_d":  "47.1",
-                                                           "mod_r":  "3",
                                                            "beam_x":  "34.5",
                                                            "focus_dist":  "30",
                                                            "clip_wall":  "2.4",
@@ -36,13 +35,14 @@
                                                            "cam_tilt":  "45",
                                                            "show_scope":  "true",
                                                            "show_module":  "true",
-                                                           "show_dims":  "true"
+                                                           "show_dims":  "true",
+                                                           "mod_r_front":  "7",
+                                                           "mod_r_back":  "1.5"
                                                        },
                           "Falcon A1 Pro 20W - bottom screws":  {
                                                                     "mount_style":  "bottom_screws",
                                                                     "mod_w":  "69.5",
                                                                     "mod_d":  "47.1",
-                                                                    "mod_r":  "3",
                                                                     "beam_x":  "34.5",
                                                                     "focus_dist":  "30",
                                                                     "clip_wall":  "2.4",
@@ -73,13 +73,14 @@
                                                                     "cam_tilt":  "45",
                                                                     "show_scope":  "true",
                                                                     "show_module":  "true",
-                                                                    "show_dims":  "true"
+                                                                    "show_dims":  "true",
+                                                                    "mod_r_front":  "7",
+                                                                    "mod_r_back":  "1.5"
                                                                 },
                           "Sculpfun C1 Mini - clip (not measured yet)":  {
                                                                              "mount_style":  "clip",
                                                                              "mod_w":  "68",
                                                                              "mod_d":  "44",
-                                                                             "mod_r":  "3",
                                                                              "beam_x":  "32",
                                                                              "focus_dist":  "30",
                                                                              "clip_wall":  "2.4",
@@ -110,7 +111,9 @@
                                                                              "cam_tilt":  "45",
                                                                              "show_scope":  "true",
                                                                              "show_module":  "true",
-                                                                             "show_dims":  "true"
+                                                                             "show_dims":  "true",
+                                                                             "mod_r_front":  "3",
+                                                                             "mod_r_back":  "3"
                                                                          }
                       }
 }

@@ -23,8 +23,10 @@ mount_style = "clip"; // [clip, bottom_screws, side_plate]
 mod_w = 68; // [20:0.1:150]
 // Module depth, front to back
 mod_d = 44; // [20:0.1:150]
-// Corner radius of the module housing, seen from below
-mod_r = 3; // [0:0.1:15]
+// Corner radius at the module's front corners, seen from below
+mod_r_front = 3; // [0:0.1:20]
+// Corner radius at the module's back corners, seen from below
+mod_r_back = 3; // [0:0.1:20]
 // Distance from the module's right face to the laser beam
 beam_x = 32; // [0:0.1:150]
 // Distance from the module's bottom face down to the focus point
@@ -41,6 +43,8 @@ clip_h = 10; // [5:0.1:40]
 clip_lip = 1.5; // [0:0.1:5]
 // M3 clamp screw with captive nut on the front
 clip_screw = true;
+// Fill the arm up to the band's top edge, so the clip prints upside down without supports
+clip_flat_top = true;
 
 /* [Bottom screw mount] */
 // Distance between the two bottom screws, front to back
@@ -85,7 +89,7 @@ snap_ratio = 0.75; // [0.6:0.01:0.9]
 /* [Camera position] */
 // Distance from the module's right face out to the lens center
 cam_offset = 14; // [0:0.1:80]
-// Distance from the mount's underside down to the lowest point of the lens (0 = flush)
+// Distance from the mount's underside down to the lowest point of the camera holder (0 = flush)
 cam_drop = 0; // [-20:0.1:80]
 // Point the camera at the focus point automatically
 aim_at_focus = true;
@@ -121,8 +125,8 @@ mount_bottom = mount_style == "clip" ? -clip_lip
              : plate_z;
 
 // lens center height for a given tilt: the lowest point of the tilted
-// lens sits cam_drop below the mount's underside
-function lens_z(t) = mount_bottom - cam_drop + scope_d / 2 * sin(t);
+// collar rim sits cam_drop below the mount's underside
+function lens_z(t) = mount_bottom - cam_drop + collar_d / 2 * sin(t);
 function aim(t) = atan2(cam_offset + beam_x, lens_z(t) + focus_dist);
 
 // lens height and aim depend on each other, a few fixed-point steps converge
@@ -133,7 +137,6 @@ focus_pt = [-beam_x, 0, -focus_dist];
 
 clip_in  = [mod_w, mod_d] + 2 * [clip_clearance, clip_clearance];
 clip_out = clip_in + 2 * [clip_wall, clip_wall];
-clip_r   = mod_r + clip_clearance;       // inner corner radius
 clip_x   = clip_clearance + clip_wall;   // band's right outer face
 
 // ---------- camera collar ----------
@@ -150,26 +153,34 @@ module scope_cut() {
     at_camera() {
         // the bore runs on past the collar so the scope body and cable can exit
         down(clamp_len / 2 + 1) zcyl(d = bore_d, h = clamp_len + 80, anchor = BOTTOM);
-        // snap opening on the outer side
-        cuboid([collar_d, bore_d * snap_ratio, clamp_len + 2], anchor = LEFT);
+        // snap opening on the outer side, as long as the bore so the scope
+        // snaps in even where the arm surrounds it
+        down(clamp_len / 2 + 1)
+            cuboid([2 * collar_d, bore_d * snap_ratio, clamp_len + 80], anchor = LEFT + BOTTOM);
     }
+}
+
+// the module seen from below, grown by c (negative shrinks); band, pocket,
+// lip and ghost all derive from it so their corner radii stay consistent
+module mod_outline(c = 0) {
+    // BOSL2 corner order: back right, back left, front left, front right
+    offset(r = c)
+        translate([-mod_w / 2, 0])
+            rect([mod_w, mod_d], rounding = [mod_r_back, mod_r_back, mod_r_front, mod_r_front]);
 }
 
 // space the module itself occupies, nothing may intrude; only as tall as
 // needed, a huge cutter costs depth precision in the F5 preview
 module module_keepout(c = 0) {
     h = max(clip_h, side_lip_h, plate_z + plate_h) + 1;
-    translate([-mod_w / 2, 0, 0])
-        cuboid([mod_w + 2 * c, mod_d + 2 * c, h], rounding = mod_r + c,
-               edges = "Z", anchor = BOTTOM);
+    linear_extrude(h) mod_outline(c);
 }
 
 // ---------- clip ----------
 
 module clip_body() {
-    translate([-mod_w / 2, 0, -clip_lip])
-        cuboid([clip_out.x, clip_out.y, clip_h + clip_lip],
-               rounding = clip_r + clip_wall, edges = "Z", anchor = BOTTOM);
+    down(clip_lip) linear_extrude(clip_h + clip_lip)
+        mod_outline(clip_clearance + clip_wall);
     if (clip_screw)
         translate([-mod_w / 2, -clip_out.y / 2 + eps, -clip_lip])
             cuboid([nut_af + 5, boss_t, clip_h + clip_lip],
@@ -179,9 +190,8 @@ module clip_body() {
 module clip_cuts() {
     module_keepout(clip_clearance);
     // bottom opening inside the lip
-    translate([-mod_w / 2, 0, 0])
-        cuboid([clip_in.x - 2 * clip_lip, clip_in.y - 2 * clip_lip, 3 * clip_lip + 2],
-               rounding = max(clip_r - clip_lip, 0), edges = "Z", anchor = CENTER);
+    down(clip_lip + 1) linear_extrude(clip_lip + 2)
+        mod_outline(clip_clearance - clip_lip);
     if (clip_screw) {
         zm = (clip_h - clip_lip) / 2;
         y_nut = -clip_out.y / 2 - boss_t / 2;
@@ -192,6 +202,15 @@ module clip_cuts() {
             cuboid([nut_af + 0.3, nut_t + 0.3, clip_h], anchor = BOTTOM);
         }
     }
+}
+
+// footprint of arm and collar on the band's top plane, so the part lies
+// flat when printed upside down
+module clip_top_slab() {
+    x0 = clip_x - clip_wall + eps;
+    x_far = cam_pos.x + clamp_len / 2 * sin(tilt) + collar_d / 2 * cos(tilt);
+    translate([x0, 0, clip_h - eps])
+        cuboid([max(x_far - x0, eps), collar_d, eps], anchor = LEFT + BOTTOM);
 }
 
 // inset by eps so its faces don't coincide with the band's (preview flicker)
@@ -260,6 +279,7 @@ module mount() {
             if (mount_style == "side_plate")   plate_body();
             hull() {
                 if (mount_style == "clip")         clip_anchor();
+                if (mount_style == "clip" && clip_flat_top) clip_top_slab();
                 if (mount_style == "bottom_screws") bottom_anchor();
                 if (mount_style == "side_plate")   plate_anchor();
                 collar();
@@ -300,8 +320,7 @@ module label(pos, txt, halign = "center", valign = "bottom") {
 
 module ghosts() {
     if (show_module) {
-        %translate([-mod_w / 2, 0, 0])
-            cuboid([mod_w, mod_d, ghost_h], rounding = mod_r, edges = "Z", anchor = BOTTOM);
+        %linear_extrude(ghost_h) mod_outline();
         color(beam_color) {
             dim_line([-beam_x, 0, 0], focus_pt, 0.5);
             move(focus_pt) sphere(d = 1.6, $fn = 16);
@@ -317,7 +336,7 @@ module dims() {
           : mount_style == "side_plate" ? max(mod_d, plate_w) / 2
           : max(mod_d, screw_spacing + pad_d) / 2;
     yf = -front - 3;                     // dimension plane in front of everything
-    lens_low = lens_pos + scope_d / 2 * [cos(tilt), 0, -sin(tilt)];  // lowest point of the lens
+    lens_low = lens_pos + collar_d / 2 * [cos(tilt), 0, -sin(tilt)];  // lowest point of the collar
     z_off = min(lens_low.z, mount_bottom) - collar_d / 2 - 4;      // cam_offset line
     x_drop = cam_pos.x + collar_d / 2 + clamp_len / 2 + 4;         // cam_drop line
     z_beam = min(-focus_dist, z_off) - 6;
@@ -329,6 +348,8 @@ module dims() {
     label([-mod_w / 2, yf, ghost_h + 3.6], str("mod_w = ", mod_w));
     dim_arrow([-mod_w - 3, -mod_d / 2, ghost_h], [-mod_w - 3, mod_d / 2, ghost_h]);
     label([-mod_w - 4, -mod_d / 2, ghost_h], str("mod_d = ", mod_d), "right", "center");
+    label([-mod_w - 1, -mod_d / 2, ghost_h * 0.4], str("mod_r_front = ", mod_r_front), "right", "center");
+    label([-mod_w - 1, mod_d / 2, ghost_h * 0.7], str("mod_r_back = ", mod_r_back), "right", "center");
 
     // beam and focus
     dim_line([0, yf, 0], [0, yf, z_beam - 1], 0.12);

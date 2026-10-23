@@ -109,8 +109,8 @@ Open a section in the Customizer, drag a slider or type a number, then press **F
 
 | Slider | Meaning |
 |---|---|
-| `cam_offset` | how far the camera sits out to the right of the module |
-| `cam_drop` | how far the camera sits below the module's bottom face |
+| `cam_offset` | how far the lens center sits out to the right of the module |
+| `cam_drop` | how far the lens reaches below the mount's underside; 0 = flush with the mount |
 | `aim_at_focus` | ticked: the camera points at the focus point automatically |
 | `cam_tilt` | manual angle, only used when `aim_at_focus` is off |
 
@@ -148,6 +148,10 @@ air-assist stream.
 1. Click **+** next to the preset dropdown and give it a name, e.g. `xTool D1 - clip`.
 2. Save the design with **File → Save** (Ctrl+S). OpenSCAD writes your preset into
    `endoscope_mount.json`.
+
+OpenSCAD reads `endoscope_mount.json` only when it opens the design, and rewrites it on
+every save. If the file changed in the meantime (e.g. after `git pull`), close OpenSCAD
+without saving and reopen the design, otherwise the old presets overwrite the new ones.
 
 Want to share it? Send the block for your preset from `endoscope_mount.json`, and it can be
 added to the list above.

@@ -83,10 +83,10 @@ clamp_wall = 2.2; // [1:0.1:5]
 snap_ratio = 0.75; // [0.6:0.01:0.9]
 
 /* [Camera position] */
-// Distance from the module's right face out to the camera
+// Distance from the module's right face out to the lens center
 cam_offset = 14; // [0:0.1:80]
-// Distance from the module's bottom face down to the camera
-cam_drop = 8; // [-20:0.1:80]
+// Distance from the mount's underside down to the lowest point of the lens (0 = flush)
+cam_drop = 0; // [-20:0.1:80]
 // Point the camera at the focus point automatically
 aim_at_focus = true;
 // Manual tilt from vertical toward the beam (used when aim_at_focus is off)
@@ -115,8 +115,20 @@ boss_t = 6;             // clamp screw boss thickness
 bore_d   = scope_d + scope_clearance;
 collar_d = bore_d + 2 * clamp_wall;
 
-tilt     = aim_at_focus ? atan2(cam_offset + beam_x, focus_dist - cam_drop) : cam_tilt;
-cam_pos  = [cam_offset, 0, -cam_drop];
+// underside of the mount, the reference for cam_drop
+mount_bottom = mount_style == "clip" ? -clip_lip
+             : mount_style == "bottom_screws" ? -bracket_t
+             : plate_z;
+
+// lens center height for a given tilt: the lowest point of the tilted
+// lens sits cam_drop below the mount's underside
+function lens_z(t) = mount_bottom - cam_drop + scope_d / 2 * sin(t);
+function aim(t) = atan2(cam_offset + beam_x, lens_z(t) + focus_dist);
+
+// lens height and aim depend on each other, a few fixed-point steps converge
+tilt     = aim_at_focus ? aim(aim(aim(aim(aim(45))))) : cam_tilt;
+lens_pos = [cam_offset, 0, lens_z(tilt)];
+cam_pos  = lens_pos + clamp_len / 2 * [sin(tilt), 0, cos(tilt)];   // collar center
 focus_pt = [-beam_x, 0, -focus_dist];
 
 clip_in  = [mod_w, mod_d] + 2 * [clip_clearance, clip_clearance];
@@ -136,7 +148,8 @@ module collar() {
 
 module scope_cut() {
     at_camera() {
-        zcyl(d = bore_d, h = clamp_len + 2);
+        // the bore runs on past the collar so the scope body and cable can exit
+        down(clamp_len / 2 + 1) zcyl(d = bore_d, h = clamp_len + 80, anchor = BOTTOM);
         // snap opening on the outer side
         cuboid([collar_d, bore_d * snap_ratio, clamp_len + 2], anchor = LEFT);
     }
@@ -292,7 +305,7 @@ module ghosts() {
         color(beam_color) {
             dim_line([-beam_x, 0, 0], focus_pt, 0.5);
             move(focus_pt) sphere(d = 1.6, $fn = 16);
-            dim_line(cam_pos, focus_pt, 0.15);
+            dim_line(lens_pos, focus_pt, 0.15);
         }
     }
     if (show_scope)
@@ -304,9 +317,9 @@ module dims() {
           : mount_style == "side_plate" ? max(mod_d, plate_w) / 2
           : max(mod_d, screw_spacing + pad_d) / 2;
     yf = -front - 3;                     // dimension plane in front of everything
-    reach = clamp_len / 2 + collar_d / 2;
-    z_off = -cam_drop - reach - 4;       // cam_offset line
-    x_drop = cam_offset + reach + 4;     // cam_drop line
+    lens_low = lens_pos + scope_d / 2 * [cos(tilt), 0, -sin(tilt)];  // lowest point of the lens
+    z_off = min(lens_low.z, mount_bottom) - collar_d / 2 - 4;      // cam_offset line
+    x_drop = cam_pos.x + collar_d / 2 + clamp_len / 2 + 4;         // cam_drop line
     z_beam = min(-focus_dist, z_off) - 6;
 
     // module
@@ -329,16 +342,16 @@ module dims() {
     label([xfl - 1, yf, -focus_dist / 2], str("focus_dist = ", focus_dist), "right", "center");
 
     // camera position
-    dim_line([cam_offset, yf, -cam_drop], [cam_offset, yf, z_off - 1], 0.12);
-    dim_arrow([0, yf, z_off], [cam_offset, yf, z_off]);
-    label([cam_offset / 2, yf, z_off - 0.8], str("cam_offset = ", cam_offset), "center", "top");
+    dim_line([lens_pos.x, yf, lens_pos.z], [lens_pos.x, yf, z_off - 1], 0.12);
+    dim_arrow([0, yf, z_off], [lens_pos.x, yf, z_off]);
+    label([lens_pos.x / 2, yf, z_off - 0.8], str("cam_offset = ", cam_offset), "center", "top");
 
-    dim_line([0, yf, 0], [x_drop + 1, yf, 0], 0.12);
-    dim_line([cam_offset, yf, -cam_drop], [x_drop + 1, yf, -cam_drop], 0.12);
-    dim_arrow([x_drop, yf, 0], [x_drop, yf, -cam_drop]);
-    label([x_drop + 1.5, yf, -cam_drop / 2], str("cam_drop = ", cam_drop), "left", "center");
+    dim_line([0, yf, mount_bottom], [x_drop + 1, yf, mount_bottom], 0.12);
+    dim_line([lens_low.x, yf, lens_low.z], [x_drop + 1, yf, lens_low.z], 0.12);
+    dim_arrow([x_drop, yf, mount_bottom], [x_drop, yf, lens_low.z]);
+    label([x_drop + 1.5, yf, (mount_bottom + lens_low.z) / 2], str("cam_drop = ", cam_drop), "left", "center");
 
-    label([x_drop + 1.5, yf, -cam_drop - 2],
+    label([x_drop + 1.5, yf, min(mount_bottom, lens_low.z) - 2.5],
           str("cam_tilt = ", round(tilt * 10) / 10, "°", aim_at_focus ? " (auto)" : ""),
           "left", "top");
 

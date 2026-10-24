@@ -92,9 +92,9 @@ cam_offset = 14; // [0:0.1:80]
 // Distance from the mount's underside down to the lowest point of the camera holder (0 = flush)
 cam_drop = 0; // [-20:0.1:80]
 // Point the camera at the focus point automatically
-aim_at_focus = true;
-// Manual tilt from vertical toward the beam (used when aim_at_focus is off)
-cam_tilt = 45; // [0:1:90]
+aim_at_focus = false;
+// Manual tilt from vertical toward the beam (used when aim_at_focus is off; 0 = straight down)
+cam_tilt = 0; // [0:1:90]
 
 /* [Preview] */
 // Show a ghost endoscope (F5 preview only)

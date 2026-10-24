@@ -20,13 +20,13 @@ machine), below the module, looking at the laser spot.
 
 | Preset | Status | Hardware |
 |---|---|---|
-| Falcon A1 Pro 20W - clip | measured, test print pending | 1× M3×10 screw, 1× M3 nut |
+| Falcon A1 Pro 20W - clip | test-printed, fits | 1× M3×10 screw, 1× M3 nut |
 | Falcon A1 Pro 20W - bottom screws | measured, test print pending | 2× M3×10 screws (replace the original M3×8) |
 | Sculpfun C1 Mini - clip (not measured yet) | placeholder values, do not print | 1× M3×10 screw, 1× M3 nut |
 
 If your laser is not listed, start with any clip preset and change the sizes (see below).
 
-**Falcon A1 Pro 20W notes**: module 69.5 × 47.1 mm, corner radius about 7 mm at the front
+**Falcon A1 Pro 20W notes**: module 69.3 × 47.1 mm, corner radius about 7 mm at the front
 and 1.5 mm at the back, beam 34.5 mm from the right face.
 The bottom screws are M3×8, 35.5 mm apart, 10 mm in from the right face. The bracket adds
 3 mm, so use M3×10: that still engages 7 mm of thread and cannot bottom out deeper than the
@@ -117,8 +117,8 @@ safer than too large.
 |---|---|
 | `cam_offset` | how far the lens center sits out to the right of the module |
 | `cam_drop` | how far the camera holder reaches below the mount's underside; 0 = flush, nothing sticks out below |
-| `aim_at_focus` | ticked: the camera points at the focus point automatically |
-| `cam_tilt` | manual angle, only used when `aim_at_focus` is off |
+| `aim_at_focus` | ticked: the camera points at the focus point automatically (off in all presets) |
+| `cam_tilt` | manual angle, only used when `aim_at_focus` is off; 0 = straight down (preset default) |
 
 Keep the camera above the workpiece (`cam_drop` smaller than `focus_dist`) and out of the
 air-assist stream.
@@ -128,7 +128,7 @@ air-assist stream.
 | Slider | Meaning |
 |---|---|
 | `clip_h` | height of the band; keep it below the cooling vents |
-| `clip_clearance` | gap between band and module; increase if too tight |
+| `clip_clearance` | gap between band and module on each side (0.2 = 0.4 mm in total across width and depth); lower if loose, raise if too tight |
 | `clip_lip` | small ledge under the module's bottom edge, sets the height |
 | `clip_wall` | wall thickness |
 | `clip_screw` | M3 clamp screw with a captive nut on the front |
@@ -192,6 +192,7 @@ clean it regularly.
 | Presets missing | `endoscope_mount.json` must be next to the `.scad` and have the same name |
 | Changes in the `.scad` file not visible | reopen the file, the Customizer reads fields only on opening |
 | Camera holder too tight / too loose | `scope_clearance` up / down, or `snap_ratio` |
+| Clip too tight / too loose | `clip_clearance` up / down in 0.05 mm steps; tighten the M3 screw |
 
 ## Files
 
